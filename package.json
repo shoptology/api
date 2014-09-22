@@ -17,12 +17,16 @@
   },
   "homepage": "https://github.com/shoptology/api",
   "dependencies": {
-    "express": "^4.9.4",
-    "swaggerize-express": "^2.0.0-rc.1"
-  },
-  "devDependencies": {
     "body-parser": "^1.8.3",
-    "supertest": "^0.13.0",
-    "tape": "^3.0.0"
-  }
+    "connect-mongo": "^0.4.1",
+    "express": "^4.9.4",
+    "express-json": "^1.0.0",
+    "express-session": "^1.8.2",
+    "install": "^0.1.7",
+    "json": "^9.0.1",
+    "mongoose": "^3.8.16",
+    "npm": "^2.0.0",
+    "swagger-node-express": "^2.1.0"
+  },
+  "devDependencies": {}
 }
