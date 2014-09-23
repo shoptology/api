@@ -20,6 +20,7 @@ var express = require("express"),
  url = require("url"),
  json = require("express-json"),
  cors = require("cors"),
+ glob = require("glob"),
  session = require('express-session'),
  MongoStore = require('connect-mongo')({session:session}),
  mongoose = require('mongoose'),
@@ -27,6 +28,9 @@ var express = require("express"),
  app = express(),
  swagger = require("swagger-node-express").createNew(app);
 
+/**
+ * Load in Resources
+ */
 var userResources = require("./resources/users.js");
 
 
@@ -39,6 +43,7 @@ mongoose.connection.on('error', function() {
     console.error('MongoDB Connection Error. Make sure MongoDB is running.');
 });
 
+// Add CORS support
 var corsOptions = {
   credentials: true,
   origin: function(origin,callback) {
@@ -57,8 +62,13 @@ app.use(json());
 app.use(bodyParser.urlencoded());
 app.use(cors(corsOptions));
 
-swagger.setAppHandler(app);
 
+
+/**
+ * Swagger
+ */
+
+swagger.setAppHandler(app);
 
 // set api info
 swagger.setApiInfo({
@@ -70,7 +80,13 @@ swagger.setApiInfo({
   licenseUrl: "http://www.apache.org/licenses/LICENSE-2.0.html"
 });
 
-var models = require("./models/sample.js");
+// Load any schemas in models into our models object
+var models = {};    
+var schemas = glob.sync("./models/*.js");
+schemas.forEach(function(filename) {
+    var schema = require(filename);
+    models[filename.replace("./models/", "").slice(0, -3)] = schema;
+});
 
 // Add models and methods to swagger
 swagger.addModels(models)
@@ -141,145 +157,4 @@ app.use(function(err, req, res, next){
 
 // Start the server on port 8002
 app.listen(8002);
-
-
-
-/// Load module dependencies.
-/*var express = require("express"),
- url = require("url"),
- bodyParser = require('body-parser'),
- session = require('express-session'),
- MongoStore = require('connect-mongo')({session:session}),
- mongoose = require('mongoose'),
- json = require('express-json'),
- swagger = require("swagger-node-express");
-
-// Create the application.
-var app = express()
-	.use(json());
-app.use(bodyParser.urlencoded());
-
-/**
- * Connect to MongoDB.
- */
-
-/*mongoose.connect('mongodb://localhost:27017/test');
-mongoose.connection.on('error', function() {
-    console.error('MongoDB Connection Error. Make sure MongoDB is running.');
-});
-
-// Couple the application to the Swagger module.
-swagger.setAppHandler(app);
-
-swagger.addModels({
-    "Category":{
-      "id":"Category",
-      "required": ["id", "name"],
-      "properties":{
-        "id":{
-          "type":"integer",
-          "format": "int64",
-          "description": "Category unique identifier",
-          "minimum": "0.0",
-          "maximum": "100.0"
-        },
-        "name":{
-          "type":"string",
-          "description": "Name of the category"
-        }
-      }
-    },
-    "User":{
-      "id":"User",
-      "required": ["id", "name"],
-      "properties":{
-        "id":{
-          "type":"integer",
-          "format":"int64",
-          "description": "Unique identifier for the User",
-          "minimum": "0.0",
-          "maximum": "100.0"
-        },
-        "category":{
-          "$ref":"Category",
-          "description": "Category the user is in"
-        },
-        "name":{
-          "type":"string",
-          "description": "Friendly name of the user"
-        },
-        "photoUrls":{
-          "type":"array",
-          "description": "Image URLs",
-          "items":{
-            "type":"string"
-          }
-        },
-        "tags":{
-          "type":"array",
-          "description": "Tags assigned to this user",
-          "items":{
-            "$ref":"Tag"
-          }
-        },
-        "status":{
-          "type":"string",
-          "description":"user status in the store",
-          "enum":[
-            "available",
-            "pending",
-            "sold"
-          ]
-        }
-      }
-    },
-    "Tag":{
-      "id":"Tag",
-      "required": ["id"],
-      "properties":{
-        "id":{
-          "type":"integer",
-          "format":"int64",
-          "description": "Unique identifier for the tag"
-        },
-        "name":{
-          "type":"string",
-          "description":"Friendly name for the tag"
-        }
-      }
-    }
-});
-
-var findById = {
-  'spec': {
-    "description" : "Operations about users",
-    "path" : "/user.{format}/{userId}",
-    "notes" : "Returns a user based on ID",
-    "summary" : "Find user by ID",
-    "method": "GET",
-    "parameters" : [swagger.pathParam("userId", "ID of user that needs to be fetched", "string")],
-    "type" : "User",
-    "errorResponses" : [swagger.errors.invalid('id'), swagger.errors.notFound('user')],
-    "nickname" : "getUserById"
-  },
-  'action': function (req,res) {
-    if (!req.params.userId) {
-      throw swagger.errors.invalid('id');
-    }
-    var id = parseInt(req.params.userId);
-    var user = userData.getUserById(id);
-
-    if (user) {
-      res.send(JSON.stringify(user));
-    } else {
-      throw swagger.errors.notFound('user');
-    }
-  }
-};
-
-swagger.addGet(findById);
-
-swagger.configure("http://0.0.0.0", "0.1");
-
-app.listen(8002);
-console.log('started');*/
+console.log('Server started at http://0.0.0.0:8002');

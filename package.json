@@ -4,6 +4,7 @@
   "description": "API Boilerplate",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,6 +24,7 @@
     "express": "^4.9.4",
     "express-json": "^1.0.0",
     "express-session": "^1.8.2",
+    "glob": "^4.0.6",
     "install": "^0.1.7",
     "json": "^9.0.1",
     "mongoose": "^3.8.16",
