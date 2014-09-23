@@ -10,7 +10,7 @@ var categories = {
   3: {id: 3, name: "Rabbits"},
   4: {id: 4, name: "Lions"}};
 
-var pets = {
+var users = {
   1: {id: 1, 
 		  category: categories[2], 
 		  name: "Cat 1", 
@@ -73,47 +73,14 @@ var pets = {
       status: "available"}
 };
 
-exports.getPetById = function getPetById(id) {
-  return pets[id];
+exports.getUserById = function getUserById(id) {
+  return users[id];
 }
 
-
-exports.findPetByStatus = function findPetByStatus(status) {
-  var keys = {}
-  var array = status.split(",");
-    array.forEach(function(item) {
-      keys[item] = item;
-    })
-  var output = [];
-  for(key in pets) {
-    var pet = pets[key];
-    if(pet.status && keys[pet.status]) output.push(pet);
-  }
-  return output;
+exports.addUser = function addUser(user){
+  users[user.id] = user;
 }
 
-exports.findPetByTags = function findPetByTags(tags) {
-  var keys = {}
-  var array = tags.split(",");
-	array.forEach(function(item) {
-	  keys[item] = item;
-	})
-  var output = [];
-  for(key in pets) {
-    var pet = pets[key];
-    if(pet.tags) {
-      pet.tags.forEach(function (tag) {
-        if(tag.name && keys[tag.name]) output.push(pet);
-      });
-    }
-  }
-  return output;
-}
-
-exports.addPet = function addPet(pet){
-  pets[pet.id] = pet;
-}
-
-exports.deletePet = function deletePet(id) {
-  delete pets[id];
+exports.deleteUser = function deleteUser(id) {
+  delete users[id];
 }

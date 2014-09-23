@@ -3,15 +3,15 @@
 // This is a sample application which uses the [swagger-node-express](https://github.com/wordnik/swagger-node-express)
 // module.  The application is organized in the following manner:
 //
-// #### petResources.js
+// #### userResources.js
 //
-// All API methods for this petstore implementation live in this file and are added to the swagger middleware.
+// All API methods for this userstore implementation live in this file and are added to the swagger middleware.
 //
 // #### models.js
 //
 // This contains all model definitions which are sent & received from the API methods.
 //
-// #### petData.js
+// #### userData.js
 //
 // This is the sample implementation which deals with data for this application
 
@@ -20,12 +20,24 @@ var express = require("express"),
  url = require("url"),
  json = require("express-json"),
  cors = require("cors"),
+ session = require('express-session'),
+ MongoStore = require('connect-mongo')({session:session}),
+ mongoose = require('mongoose'),
  bodyParser = require('body-parser'),
  app = express(),
  swagger = require("swagger-node-express").createNew(app);
 
-var petResources = require("./resources.js");
+var userResources = require("./resources/users.js");
 
+
+/**
+ * Connect to MongoDB.
+ */
+
+mongoose.connect('mongodb://localhost:27017/test');
+mongoose.connection.on('error', function() {
+    console.error('MongoDB Connection Error. Make sure MongoDB is running.');
+});
 
 var corsOptions = {
   credentials: true,
@@ -47,6 +59,39 @@ app.use(cors(corsOptions));
 
 swagger.setAppHandler(app);
 
+
+// set api info
+swagger.setApiInfo({
+  title: "Swagger Sample App",
+  description: "This is a sample server Userstore server. You can find out more about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> or on irc.freenode.net, #swagger.  For this sample, you can use the api key \"special-key\" to test the authorization filters",
+  termsOfServiceUrl: "http://helloreverb.com/terms/",
+  contact: "apiteam@wordnik.com",
+  license: "Apache 2.0",
+  licenseUrl: "http://www.apache.org/licenses/LICENSE-2.0.html"
+});
+
+var models = require("./models/sample.js");
+
+// Add models and methods to swagger
+swagger.addModels(models)
+  .addGet(userResources.findById)      // - /user/{userId}
+  .addPost(userResources.addUser)
+  .addPut(userResources.updateUser)
+  .addDelete(userResources.deleteUser);
+
+swagger.configureDeclaration("user", {
+  description : "Operations about Users",
+  authorizations : ["oauth2"],
+  produces: ["application/json"]
+});
+
+swagger.setAuthorizations({
+  apiKey: {
+    type: "apiKey",
+    passAs: "header"
+  }
+});
+
 // This is a sample validator.  It simply says that for _all_ POST, DELETE, PUT
 // methods, the header `api_key` OR query param `api_key` must be equal
 // to the string literal `special-key`.  All other HTTP ops are A-OK
@@ -66,46 +111,12 @@ swagger.addValidator(
   }
 );
 
-var models = require("./models/sample.js");
-
-// Add models and methods to swagger
-swagger.addModels(models)
-  .addGet(petResources.findByTags)    // - /pet/findByTags
-  .addGet(petResources.findByStatus)  // - /pet/findByStatus
-  .addGet(petResources.findById)      // - /pet/{petId}
-  .addPost(petResources.addPet)
-  .addPut(petResources.updatePet)
-  .addDelete(petResources.deletePet);
-
-swagger.configureDeclaration("pet", {
-  description : "Operations about Pets",
-  authorizations : ["oauth2"],
-  produces: ["application/json"]
-});
-
-// set api info
-swagger.setApiInfo({
-  title: "Swagger Sample App",
-  description: "This is a sample server Petstore server. You can find out more about Swagger at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> or on irc.freenode.net, #swagger.  For this sample, you can use the api key \"special-key\" to test the authorization filters",
-  termsOfServiceUrl: "http://helloreverb.com/terms/",
-  contact: "apiteam@wordnik.com",
-  license: "Apache 2.0",
-  licenseUrl: "http://www.apache.org/licenses/LICENSE-2.0.html"
-});
-
-swagger.setAuthorizations({
-  apiKey: {
-    type: "apiKey",
-    passAs: "header"
-  }
-});
-
 // Configures the app's base path and api version.
-swagger.configureSwaggerPaths("", "api-docs", "")
+swagger.configureSwaggerPaths("", "docs", "")
 swagger.configure("http://0.0.0.0:8002", "1.0.0");
 
 // Serve up swagger ui at /docs via static route
-var docs_handler = express.static(__dirname + '/../swagger-ui/');
+var docs_handler = express.static(__dirname + '/node_modules/swagger-node-express/swagger-ui/');
 app.get(/^\/docs(\/.*)?$/, function(req, res, next) {
   if (req.url === '/docs') { // express static barfs on root url w/o trailing slash
     res.writeHead(302, { 'Location' : req.url + '/' });
@@ -178,24 +189,24 @@ swagger.addModels({
         }
       }
     },
-    "Pet":{
-      "id":"Pet",
+    "User":{
+      "id":"User",
       "required": ["id", "name"],
       "properties":{
         "id":{
           "type":"integer",
           "format":"int64",
-          "description": "Unique identifier for the Pet",
+          "description": "Unique identifier for the User",
           "minimum": "0.0",
           "maximum": "100.0"
         },
         "category":{
           "$ref":"Category",
-          "description": "Category the pet is in"
+          "description": "Category the user is in"
         },
         "name":{
           "type":"string",
-          "description": "Friendly name of the pet"
+          "description": "Friendly name of the user"
         },
         "photoUrls":{
           "type":"array",
@@ -206,14 +217,14 @@ swagger.addModels({
         },
         "tags":{
           "type":"array",
-          "description": "Tags assigned to this pet",
+          "description": "Tags assigned to this user",
           "items":{
             "$ref":"Tag"
           }
         },
         "status":{
           "type":"string",
-          "description":"pet status in the store",
+          "description":"user status in the store",
           "enum":[
             "available",
             "pending",
@@ -241,27 +252,27 @@ swagger.addModels({
 
 var findById = {
   'spec': {
-    "description" : "Operations about pets",
-    "path" : "/pet.{format}/{petId}",
-    "notes" : "Returns a pet based on ID",
-    "summary" : "Find pet by ID",
+    "description" : "Operations about users",
+    "path" : "/user.{format}/{userId}",
+    "notes" : "Returns a user based on ID",
+    "summary" : "Find user by ID",
     "method": "GET",
-    "parameters" : [swagger.pathParam("petId", "ID of pet that needs to be fetched", "string")],
-    "type" : "Pet",
-    "errorResponses" : [swagger.errors.invalid('id'), swagger.errors.notFound('pet')],
-    "nickname" : "getPetById"
+    "parameters" : [swagger.pathParam("userId", "ID of user that needs to be fetched", "string")],
+    "type" : "User",
+    "errorResponses" : [swagger.errors.invalid('id'), swagger.errors.notFound('user')],
+    "nickname" : "getUserById"
   },
   'action': function (req,res) {
-    if (!req.params.petId) {
+    if (!req.params.userId) {
       throw swagger.errors.invalid('id');
     }
-    var id = parseInt(req.params.petId);
-    var pet = petData.getPetById(id);
+    var id = parseInt(req.params.userId);
+    var user = userData.getUserById(id);
 
-    if (pet) {
-      res.send(JSON.stringify(pet));
+    if (user) {
+      res.send(JSON.stringify(user));
     } else {
-      throw swagger.errors.notFound('pet');
+      throw swagger.errors.notFound('user');
     }
   }
 };
