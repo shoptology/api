@@ -35,4 +35,10 @@ exports.def =
 		}
 	};
 
-exports.model = mongoose.model('users', userSchema);
+
+// Don't create model if model is exists
+if(!mongoose.modelSchemas.users) {
+	exports.model = mongoose.model('users', userSchema);
+} else {
+	exports.model = '';
+}
