@@ -1,35 +1,22 @@
 {
-  "name": "api",
-  "version": "0.0.0",
-  "description": "API Boilerplate",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "node-swagger-express-mongodb",
+  "version": "1.0.0",
+  "author": {
+    "name": "Dan Giulvezan"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/shoptology/api.git"
+  "description": "Example API to allow CRUD operations on mobile phone data in MongoDB",
+  "main": "server.js",
+  "engines": {
+    "node": ">= 0.8.x"
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/shoptology/api/issues"
-  },
-  "homepage": "https://github.com/shoptology/api",
   "dependencies": {
-    "body-parser": "^1.8.3",
-    "connect-mongo": "^0.4.1",
-    "cors": "^2.4.2",
-    "express": "^4.9.4",
-    "express-json": "^1.0.0",
-    "express-session": "^1.8.2",
-    "glob": "^4.0.6",
-    "install": "^0.1.7",
-    "json": "^9.0.1",
-    "mongoose": "^3.8.16",
-    "npm": "^2.0.0",
-    "swagger-node-express": "^2.1.0"
+    "express": ">= 3.4.x",
+    "express-extras": ">= 0.1.x",
+    "mongoose": ">= 3.8.x",
+    "lodash": ">= 1.3.x",
+    "colors": ">= 0.6.x",
+    "serve-static": ">= 1.6.x",
+    "body-parser": ">= 1.8.x"
   },
-  "devDependencies": {}
+  "license": "apache 2.0"
 }

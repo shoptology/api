@@ -1,44 +1,38 @@
-exports.models = {
-  "id":"User",
-  "required": ["id", "name"],
-  "properties":{
-    "id":{
-      "type":"integer",
-      "format":"int64",
-      "description": "Unique identifier for the User",
-      "minimum": "0.0",
-      "maximum": "100.0"
-    },
-    "category":{
-      "$ref":"Category",
-      "description": "Category the user is in"
-    },
-    "name":{
-      "type":"string",
-      "description": "Friendly name of the user"
-    },
-    "photoUrls":{
-      "type":"array",
-      "description": "Image URLs",
-      "items":{
-        "type":"string"
-      }
-    },
-    "tags":{
-      "type":"array",
-      "description": "Tags assigned to this user",
-      "items":{
-        "$ref":"Tag"
-      }
-    },
-    "status":{
-      "type":"string",
-      "description":"user status in the store",
-      "enum":[
-        "available",
-        "pending",
-        "sold"
-      ]
-    }
-  }
-}
+/**
+* The schema and model for user data
+*/
+var mongoose = require('mongoose'),
+	Schema = mongoose.Schema;
+
+var userSchema = new mongoose.Schema({
+	id: Number,
+	name: String,
+	email: String
+});
+
+exports.def =  
+	{
+		"User":{
+			"id":"User",
+			"required": ["id", "name", "email"],
+			"properties":{
+				"id":{
+					"type":"integer",
+					"format": "int64",
+					"description": "User unique identifier",
+					"minimum": "0.0",
+					"maximum": "100.0"
+				},
+				"name":{
+					"type":"string",
+					"description": "User's name"
+				},
+				"email":{
+					"type":"string",
+					"description": "User's email address"
+				}
+			}
+		}
+	};
+
+exports.model = mongoose.model('users', userSchema);
