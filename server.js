@@ -28,7 +28,8 @@ try {
 		mongoose = require('mongoose'),
 		config = require('./config'),
 		db = mongoose.connection,
-		bodyParser = require('body-parser');
+		bodyParser = require('body-parser'),
+		dotenv = require('dotenv').load();
 } catch(err) {
 	var msg = '\nCannot initialize API\n' + err + '\n';
 	return console.log(msg.red);
@@ -111,18 +112,18 @@ swagger.configureDeclaration("user", {
 	produces: ["application/json"]
 });
 
-/*swagger.configureDeclaration("manufacturer", {
-	description : "Operations about phone manufacturers",
-	authorizations : ["oauth2"],
-	produces: ["application/json"]
-});*/
-
 // This is a sample validator.  It simply says that for _all_ POST, DELETE, PUT
 // methods, the header `api_key` OR query param `api_key` must be equal
 // to the string literal `1234`.  All other HTTP ops are A-OK
-/*swagger.addValidator(
+swagger.addValidator(
 	function validate(req, path, httpMethod) {
 		//  example, only allow POST for api_key="special-key"
+
+		// If we are in dev mode, pass our api key by default
+		if(process.env.DEV) {
+			req.headers.api_key = '1234';
+		}
+
 		if ("POST" == httpMethod || "DELETE" == httpMethod || "PUT" == httpMethod) {
 			var apiKey = req.headers["api_key"];
 			if (!apiKey) {
@@ -144,7 +145,7 @@ swagger.setAuthorizations({
     }
 });
 
-*/
+
 
 // set api info
 swagger.setApiInfo({
@@ -165,11 +166,13 @@ swagger.configure("http://localhost:8002", "1.0.0");
 // Serve up swagger ui at /docs via static route
 var docs_handler = express.static(__dirname + '/swagger-ui/');
 app.get(/^\/docs(\/.*)?$/, function(req, res, next) {
+
 	if (req.url === '/docs') { // express static barfs on root url w/o trailing slash
 		res.writeHead(302, { 'Location' : req.url + '/' });
 		res.end();
 		return;
 	}
+
 	// take off leading /docs so that connect locates file correctly
 	req.url = req.url.substr('/docs'.length);
 	return docs_handler(req, res, next);
